@@ -26,5 +26,5 @@ if __name__ == "__main__":
         elif opt in ("-c", "--coinlist"):
             coin_list = arg.split()
 
-    warmup_database(coin_list, db_path)
+    warmup_database(coin_list)
     os._exit(OK())

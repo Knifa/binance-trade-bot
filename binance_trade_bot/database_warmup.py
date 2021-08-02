@@ -14,8 +14,8 @@ from .models.coin import Coin
 from .models.pair import Pair
 
 class WarmUpDatabase(Database):
-    def __init__(self, logger: Logger, config: Config, uri="sqlite:///data/crypto_trading.db"):
-        super().__init__(logger, config, uri)
+    def __init__(self, logger: Logger, config: Config):
+        super().__init__(logger, config)
 
     def set_coins_to_warmup(self, symbols: List[str], warmup_symbols: List[str]):
         session: Session
@@ -90,15 +90,15 @@ class WarmUpTrader(AutoTrader):
 
                 pair.ratio = from_coin_price / to_coin_price
 
-def warmup_database(coin_list: List[str] = None, db_path = "data/crypto_trading.db", config: Config = None):
+def warmup_database(coin_list: List[str] = None, config: Config = None):
     logger = Logger()
-    logger.info("Starting database warmup")
-
-    logger.info(f'Will be using {db_path} as database')
-    dbPathUri = f"sqlite:///{db_path}"
 
     config = config or Config()
-    db = WarmUpDatabase(logger, config, dbPathUri)
+    logger = Logger(config)
+
+    logger.info("Starting database warmup")
+    db = WarmUpDatabase(logger, config)
+
     manager = BinanceAPIManager.create_manager(config, db, logger)
     # check if we can access API feature that require valid config
     try:
@@ -123,7 +123,7 @@ def warmup_database(coin_list: List[str] = None, db_path = "data/crypto_trading.
     trader = WarmUpTrader(manager, db, logger, config)
     trader.initialize_trade_thresholds()
     logger.info("Done. Your database is now warmed up")
-    
+
     manager.stream_manager.close()
 
 def get_all_bridge_coins(client: Client, config: Config):
