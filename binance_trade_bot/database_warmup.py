@@ -91,8 +91,6 @@ class WarmUpTrader(AutoTrader):
                 pair.ratio = from_coin_price / to_coin_price
 
 def warmup_database(coin_list: List[str] = None, config: Config = None):
-    logger = Logger()
-
     config = config or Config()
     logger = Logger(config)
 

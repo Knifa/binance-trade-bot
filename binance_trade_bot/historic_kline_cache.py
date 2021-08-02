@@ -74,10 +74,10 @@ class HistoricKlineCache:
             price = self.get_historical_ticker_price(ticker_symbol, current_date)
             if price is not None:
                 data.append(price)
-            
+
             current_date = current_date + timedelta(minutes=1)
 
-        return data        
+        return data
 
     def get_historical_ticker_price(self, ticker_symbol: str, date: datetime):
         """
@@ -93,7 +93,7 @@ class HistoricKlineCache:
             if end_date > datetime.now().replace(tzinfo=timezone.utc):
                 end_date = datetime.now().replace(tzinfo=timezone.utc)
             end_date_str = end_date.strftime("%d %b %Y %H:%M:%S")
-            self.logger.info(f"Fetching prices for {ticker_symbol} between {date} and {end_date_str}", False)
+            self.logger.info(f"Fetching prices for {ticker_symbol} between {date} and {end_date_str}")
 
             last_day = datetime.now().replace(tzinfo=timezone.utc) - timedelta(days=1)
             if date >= last_day or end_date >= last_day:

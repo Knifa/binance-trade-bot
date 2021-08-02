@@ -138,7 +138,7 @@ class BinanceStreamManager:
             self.bw_api_manager.create_stream(
                 ["bookTicker"], symbols
             )
-            
+
         self.binance_client = binance_client
         self.pending_orders: Set[Tuple[str, int]] = set()
         self.pending_orders_mutex: threading.Lock = threading.Lock()
@@ -173,7 +173,7 @@ class BinanceStreamManager:
                 "order_price": float(order["price"]),
                 "transaction_time": order["time"],
             }
-            self.logger.info(f"Pending order {order_id} for symbol {symbol} fetched:\n{fake_report}", False)
+            self.logger.info(f"Pending order {order_id} for symbol {symbol} fetched:\n{fake_report}")
             self.cache.orders[fake_report["order_id"]] = BinanceOrder(fake_report)
 
     def _invalidate_balances(self):
@@ -194,7 +194,7 @@ class BinanceStreamManager:
                 if signal_type == "CONNECT":
                     stream_info = self.bw_api_manager.get_stream_info(stream_id)
                     if "!userData" in stream_info["markets"]:
-                        self.logger.debug("Connect for userdata arrived", False)
+                        self.logger.debug("Connect for userdata arrived")
                         self._fetch_pending_orders()
                         self._invalidate_balances()
             if stream_data is not False and "event_type" in stream_data:

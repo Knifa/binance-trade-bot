@@ -21,12 +21,12 @@ class Strategy(AutoTrader):
         self.initialize_current_coin()
         self.reinit_threshold = self.manager.now().replace(second=0, microsecond=0)
         self.logger.info(f"Ratio adjust weight: {self.config.RATIO_ADJUST_WEIGHT}")
-    
+
     def scout(self):
         #check if previous buy order failed. If so, bridge scout for a new coin.
         if self.failed_buy_order:
             self.bridge_scout()
-        
+
         base_time: datetime = self.manager.now()
         allowed_idle_time = self.reinit_threshold
         if base_time >= allowed_idle_time:
@@ -111,22 +111,18 @@ class Strategy(AutoTrader):
             for pair in session.query(Pair).all():
                 if not pair.from_coin.enabled or not pair.to_coin.enabled:
                     continue
-                #self.logger.debug(f"Initializing {pair.from_coin} vs {pair.to_coin}", False)
+                #self.logger.debug(f"Initializing {pair.from_coin} vs {pair.to_coin}")
 
                 from_coin_price = self.manager.get_sell_price(pair.from_coin + self.config.BRIDGE)
                 if from_coin_price is None:
                     # self.logger.debug(
-                    #     "Skipping initializing {}, symbol not found".format(pair.from_coin + self.config.BRIDGE),
-                    #     False
-                    # )
+                    #     "Skipping initializing {}, symbol not found".format(pair.from_coin + self.config.BRIDGE))
                     continue
 
                 to_coin_price = self.manager.get_buy_price(pair.to_coin + self.config.BRIDGE)
                 if to_coin_price is None:
                     # self.logger.debug(
-                    #     "Skipping initializing {}, symbol not found".format(pair.to_coin + self.config.BRIDGE),
-                    #     False
-                    # )
+                    #     "Skipping initializing {}, symbol not found".format(pair.to_coin + self.config.BRIDGE))
                     continue
 
                 pair.ratio = (pair.ratio *self.config.RATIO_ADJUST_WEIGHT + from_coin_price / to_coin_price)  / (self.config.RATIO_ADJUST_WEIGHT + 1)
@@ -146,7 +142,7 @@ class Strategy(AutoTrader):
             price_history = {}
 
             init_weight = self.config.RATIO_ADJUST_WEIGHT
-            
+
             #Binance api allows retrieving max 1000 candles
             if init_weight > 500:
                 init_weight = 500
@@ -169,11 +165,11 @@ class Strategy(AutoTrader):
                         price = float(result[1])
                         price_history[from_coin_symbol].append(price)
 
-                for pair in group:                  
+                for pair in group:
                     to_coin_symbol = pair.to_coin.symbol
                     if to_coin_symbol not in price_history.keys():
                         price_history[to_coin_symbol] = []
-                        for result in self.manager.binance_client.get_historical_klines(f"{to_coin_symbol}{self.config.BRIDGE_SYMBOL}", "1m", start_date_str, end_date_str, limit=init_weight*2):                           
+                        for result in self.manager.binance_client.get_historical_klines(f"{to_coin_symbol}{self.config.BRIDGE_SYMBOL}", "1m", start_date_str, end_date_str, limit=init_weight*2):
                            price = float(result[1])
                            price_history[to_coin_symbol].append(price)
 
@@ -184,7 +180,7 @@ class Strategy(AutoTrader):
                     if len(price_history[to_coin_symbol]) != init_weight*2:
                         self.logger.info(f"Skip initialization. Could not fetch last {init_weight * 2} prices for {to_coin_symbol}")
                         continue
-                    
+
                     sma_ratio = 0.0
                     for i in range(init_weight):
                         sma_ratio += price_history[from_coin_symbol][i] / price_history[to_coin_symbol][i]

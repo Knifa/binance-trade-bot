@@ -42,7 +42,7 @@ class Strategy(AutoTrader):
                     self.re_initialize_trade_thresholds()
                     self.logger.info("Finished reiniting the ratios.")
                     self.reinit_threshold = base_time + timedelta(hours=1)
-                
+
 
         """
         Scout for potential jumps from the current coin to another coin
@@ -125,22 +125,18 @@ class Strategy(AutoTrader):
                 all():
                 if not pair.from_coin.enabled or not pair.to_coin.enabled:
                     continue
-                self.logger.info(f"Initializing {pair.from_coin} vs {pair.to_coin}", False)
+                self.logger.debug(f"Initializing {pair.from_coin} vs {pair.to_coin}")
 
                 from_coin_price = self.manager.get_sell_price(pair.from_coin + self.config.BRIDGE)
                 if from_coin_price is None:
-                    self.logger.info(
-                        "Skipping initializing {}, symbol not found".format(pair.from_coin + self.config.BRIDGE),
-                        False
-                    )
+                    self.logger.debug(
+                        "Skipping initializing {}, symbol not found".format(pair.from_coin + self.config.BRIDGE))
                     continue
 
                 to_coin_price = self.manager.get_buy_price(pair.to_coin + self.config.BRIDGE)
                 if to_coin_price is None:
-                    self.logger.info(
-                        "Skipping initializing {}, symbol not found".format(pair.to_coin + self.config.BRIDGE),
-                        False
-                    )
+                    self.logger.debug(
+                        "Skipping initializing {}, symbol not found".format(pair.to_coin + self.config.BRIDGE))
                     continue
 
                 pair.ratio = from_coin_price / to_coin_price
