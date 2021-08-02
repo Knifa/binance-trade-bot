@@ -17,7 +17,11 @@ def main():
 
 
     db = Database(logger, config)
-    manager = BinanceAPIManager(config, db, logger)
+    if config.ENABLE_PAPER_TRADING:
+        manager = BinanceAPIManager.create_manager_paper_trading(config, db, logger, {config.BRIDGE.symbol: 21_000.0})
+    else:
+        manager = BinanceAPIManager.create_manager(config, db, logger)
+
     # check if we can access API feature that require valid config
     try:
         _ = manager.get_account()
@@ -30,8 +34,11 @@ def main():
         logger.error("Invalid strategy name")
         return
     trader = strategy(manager, db, logger, config)
-    logger.debug(f"Chosen strategy: {config.STRATEGY}")
-    logger.debug(f"Enable API: {config.ENABLE_API}")
+    logger.info(f"Chosen strategy: {config.STRATEGY}")
+    if config.ENABLE_PAPER_TRADING:
+        logger.warning("RUNNING IN PAPER-TRADING MODE")
+    else:
+        logger.warning("RUNNING IN REAL TRADING MODE")
 
     if config.LOSS_AFTER_HOURS > 0:
         logger.debug(f"Will allow losses after not trading for {config.LOSS_AFTER_HOURS} hours")
@@ -48,8 +55,8 @@ def main():
     schedule = SafeScheduler(logger)
     schedule.every(config.SCOUT_SLEEP_TIME).seconds.do(trader.scout).tag("scouting")
     schedule.every(1).minutes.do(trader.update_values).tag("updating value history")
-    schedule.every(1).minutes.do(db.prune_scout_history).tag("pruning scout history")
-    schedule.every(1).hours.do(db.prune_value_history).tag("pruning value history")
+    #schedule.every(1).minutes.do(db.prune_scout_history).tag("pruning scout history")
+    #schedule.every(1).hours.do(db.prune_value_history).tag("pruning value history")
     schedule.every(config.LOG_PROGRESS_AFTER_HOURS).hours.do(log_progress, db=db, logger=logger).tag(
         "logging progress"
     )
